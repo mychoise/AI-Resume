@@ -38,8 +38,7 @@ export default function Login() {
               to="/register"
               className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
             >
-              start your 14-day free trial
-            </Link>
+Sign up            </Link>
           </p>
 
           <div className="mt-8">
