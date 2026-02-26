@@ -9,6 +9,7 @@ import {
   Briefcase,
   GraduationCap,
   Target,
+  Save,
 } from "lucide-react";
 import { useEmailStore } from "../store/useEmail";
 
@@ -38,6 +39,9 @@ export default function Email() {
     setGenerateEmail,
     sendEmail,
     serverResponse,
+    applicationId,
+    postDraftEmail,
+    getDraftEmail,
   } = useEmailStore();
 
   const [companyEmail, setCompanyEmail] = useState("");
@@ -45,6 +49,10 @@ export default function Email() {
   const [linkedinPost, setLinkedinPost] = useState("");
   const [subject, setSubject] = useState("");
   const [content, setContent] = useState("");
+
+  useEffect(() => {
+    getDraftEmail();
+  }, []);
 
   useEffect(() => {
     if (generateEmail) setContent(generateEmail);
@@ -79,6 +87,14 @@ export default function Email() {
     setLinkedinPost("");
     setSubject("");
     setContent("");
+  };
+
+  const handleSaveAsDraft = async () => {
+    if (!applicationId) {
+      alert("No application to save. Please generate an email first.");
+      return;
+    }
+    await postDraftEmail({ applicationId });
   };
 
   const isBusy = loading;
@@ -200,14 +216,26 @@ export default function Email() {
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={isBusy || !content}
-              className="w-full flex items-center justify-center gap-2 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-[0.99] disabled:grayscale disabled:opacity-50"
-            >
-              <Send size={18} />
-              Send Application
-            </button>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={handleSaveAsDraft}
+                disabled={isBusy || !content || !applicationId}
+                className="flex-1 flex items-center justify-center gap-2 py-4 bg-slate-600 hover:bg-slate-700 text-white font-bold rounded-xl shadow-lg shadow-slate-200 transition-all active:scale-[0.99] disabled:grayscale disabled:opacity-50"
+              >
+                <Save size={18} />
+                Save as Draft
+              </button>
+
+              <button
+                type="submit"
+                disabled={isBusy || !content}
+                className="flex-1 flex items-center justify-center gap-2 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-[0.99] disabled:grayscale disabled:opacity-50"
+              >
+                <Send size={18} />
+                Send Application
+              </button>
+            </div>
           </form>
         </div>
 
@@ -261,22 +289,22 @@ export default function Email() {
                   {[
                     {
                       label: "Keywords",
-                      val: response.scoreBreakdown.keywordMatch,
+                      val: response?.scoreBreakdown?.keywordMatch || 0,
                       icon: <Sparkles size={14} />,
                     },
                     {
                       label: "Experience",
-                      val: response.scoreBreakdown.experienceRelevance,
+                      val: response?.scoreBreakdown?.experienceRelevance || 0,
                       icon: <Briefcase size={14} />,
                     },
                     {
                       label: "Education",
-                      val: response.scoreBreakdown.educationMatch,
+                      val: response?.scoreBreakdown?.educationMatch || 0,
                       icon: <GraduationCap size={14} />,
                     },
                     {
                       label: "Clarity",
-                      val: response.scoreBreakdown.clarity,
+                      val: response?.scoreBreakdown?.clarity || 0,
                       icon: <Mail size={14} />,
                     },
                   ].map((item) => (
@@ -309,7 +337,7 @@ export default function Email() {
                       Matching Strengths
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {response.matchingSkills.map((skill, i) => (
+                      {response?.matchingSkills?.map((skill, i) => (
                         <span
                           key={i}
                           className="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-100"
@@ -326,7 +354,7 @@ export default function Email() {
                       Missing in Profile
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {response.missingSkills.map((skill, i) => (
+                      {response?.missingSkills?.map((skill, i) => (
                         <span
                           key={i}
                           className="px-3 py-1 bg-amber-50 text-amber-700 text-xs font-semibold rounded-full border border-amber-100"
